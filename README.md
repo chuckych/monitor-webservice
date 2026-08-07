@@ -76,7 +76,7 @@ Ver `config.ini`. Los valores críticos son:
 - `[SETTINGS] maxRetries / retryDelay`: cantidad de reintentos y espera entre ellos.
 - `[SETTINGS] minEmailInterval`: segundos mínimos entre emails de notificación (previene spam).
 - `[SETTINGS] logRetentionDays`: retención de logs en días (default 7). Los `monitor_*.log` más antiguos que ese valor se eliminan al ejecutar el script.
-- `[SETTINGS] sslVerify` / `caBundle`: verificación SSL de cURL. Si el `php.ini` del servidor apunta a un CA bundle inexistente y falla con "error setting certificate verify locations", poner `sslVerify = 0` (o indicar una ruta válida en `caBundle`).
+- `[SETTINGS] sslVerify` / `caBundle`: verificación SSL de cURL (por defecto `0` = desactivada). Para activarla: `sslVerify = 1` y, si el `php.ini` del servidor tiene un CA bundle inválido, indicar una ruta válida en `caBundle`.
 
 ## Versionado
 
