@@ -1,0 +1,17 @@
+.:: ALERTA WEBSERVICE ::.
+
+El webservice no está respondiendo correctamente.
+
+Timestamp: {timestamp}
+URL: {url}
+Intentos: {attempts}
+Último código HTTP: {httpCode}
+Último error: {error}
+
+Últimas líneas del log del webservice:
+{wslog}
+
+Por favor revise el servicio.
+
+--
+{agentName} Agent v{agentVersion}

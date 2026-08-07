@@ -1,0 +1,16 @@
+# Configuración (contiene credenciales)
+*.ini
+!config.example.ini
+
+# Logs
+*.log
+
+# Locks
+*.lock
+
+# Documentación interna
+PROGRESS.md
+AGENT.md
+
+# Workspace de VSCode
+*.code-workspace
