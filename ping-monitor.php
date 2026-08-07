@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 define('SCRIPT_NAME', 'ping-monitor');
-define('SCRIPT_VERSION', '1.0.4');
+define('SCRIPT_VERSION', '1.0.5');
 define('CONFIG_FILE', __DIR__ . '/config.ini');
 
 define('EXIT_SUCCESS', 0);
@@ -129,10 +129,10 @@ class WebServiceMonitor
         $config['logRetentionDays'] = isset($ini['SETTINGS']['logRetentionDays'])
             ? (int) $ini['SETTINGS']['logRetentionDays']
             : 7;
-        $config['sslVerify'] = isset($ini['SETTINGS']['sslVerify']) && (int) $ini['SETTINGS']['sslVerify'] === 1;
+        $config['sslVerify'] = !isset($ini['SETTINGS']['sslVerify']) || (int) $ini['SETTINGS']['sslVerify'] === 1;
         $config['caBundle'] = isset($ini['SETTINGS']['caBundle']) && $ini['SETTINGS']['caBundle'] !== ''
             ? $ini['SETTINGS']['caBundle']
-            : '';
+            : __DIR__ . DIRECTORY_SEPARATOR . 'cacert.pem';
 
         return $config;
     }

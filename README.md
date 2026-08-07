@@ -55,6 +55,7 @@ webservice-monitor/
 ├── config.example.ini         # Configuración de ejemplo (copiar a config.ini)
 ├── ping-monitor.php          # Script principal
 ├── email-template.example.txt # Plantilla de ejemplo (copiar a email-template.txt)
+├── cacert.pem                # CA bundle para verificación SSL (curl.se/ca)
 ├── functions/
 │   └── mail-functions.php    # Funciones de email (API HTTP) + normalización UTF-8
 ├── logs/
@@ -76,7 +77,7 @@ Ver `config.ini`. Los valores críticos son:
 - `[SETTINGS] maxRetries / retryDelay`: cantidad de reintentos y espera entre ellos.
 - `[SETTINGS] minEmailInterval`: segundos mínimos entre emails de notificación (previene spam).
 - `[SETTINGS] logRetentionDays`: retención de logs en días (default 7). Los `monitor_*.log` más antiguos que ese valor se eliminan al ejecutar el script.
-- `[SETTINGS] sslVerify` / `caBundle`: verificación SSL de cURL (por defecto `0` = desactivada). Para activarla: `sslVerify = 1` y, si el `php.ini` del servidor tiene un CA bundle inválido, indicar una ruta válida en `caBundle`.
+- `[SETTINGS] sslVerify` / `caBundle`: verificación SSL de cURL (por defecto `1` = activa, usando el `cacert.pem` incluido en el proyecto). Para desactivarla: `sslVerify = 0`.
 
 ## Versionado
 
