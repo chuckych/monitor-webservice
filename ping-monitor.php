@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 define('SCRIPT_NAME', 'ping-monitor');
-define('SCRIPT_VERSION', '1.0.2');
+define('SCRIPT_VERSION', '1.0.3');
 define('CONFIG_FILE', __DIR__ . '/config.ini');
 
 define('EXIT_SUCCESS', 0);
@@ -129,6 +129,10 @@ class WebServiceMonitor
         $config['logRetentionDays'] = isset($ini['SETTINGS']['logRetentionDays'])
             ? (int) $ini['SETTINGS']['logRetentionDays']
             : 7;
+        $config['sslVerify'] = !isset($ini['SETTINGS']['sslVerify']) || (int) $ini['SETTINGS']['sslVerify'] === 1;
+        $config['caBundle'] = isset($ini['SETTINGS']['caBundle']) && $ini['SETTINGS']['caBundle'] !== ''
+            ? $ini['SETTINGS']['caBundle']
+            : '';
 
         return $config;
     }
@@ -190,6 +194,16 @@ class WebServiceMonitor
         curl_setopt($ch, CURLOPT_DNS_CACHE_TIMEOUT, $this->config['dnsCacheTimeout']);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+
+        if (!empty($this->config['sslVerify'])) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            if (!empty($this->config['caBundle'])) {
+                curl_setopt($ch, CURLOPT_CAINFO, $this->config['caBundle']);
+            }
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        }
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

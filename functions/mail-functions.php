@@ -85,6 +85,16 @@ if (!function_exists('sendEmail')) {
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadJson);
 
+        if (!empty($config['sslVerify'])) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            if (!empty($config['caBundle'])) {
+                curl_setopt($ch, CURLOPT_CAINFO, $config['caBundle']);
+            }
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        }
+
         $headers = [
             'Content-Type:application/json',
             'Token:' . trim($config['apiToken']),
