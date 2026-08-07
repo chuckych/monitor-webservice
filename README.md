@@ -52,15 +52,17 @@ schtasks /create /tn "WebServicePingMonitor" /tr "C:\php\php.exe C:\path\to\ping
 
 ```
 webservice-monitor/
-├── config.ini                 # Archivo de configuración
+├── config.example.ini         # Configuración de ejemplo (copiar a config.ini)
 ├── ping-monitor.php          # Script principal
-├── email-template.txt        # Plantilla del cuerpo del email
+├── email-template.example.txt # Plantilla de ejemplo (copiar a email-template.txt)
 ├── functions/
 │   └── mail-functions.php    # Funciones de email (API HTTP) + normalización UTF-8
 ├── logs/
-│   └── monitor_YYYY-MM-DD.log  # Logs diarios
+│   └── monitor_YYYY-MM-DD.log  # Logs diarios (se crea automáticamente)
 └── README.md                 # Documentación
 ```
+
+> `config.ini` y `email-template.txt` no se versionan (son personalizables). Al clonar, copiar los archivos `.example` a su nombre real y ajustar los valores.
 
 ## Configuración
 
@@ -70,7 +72,7 @@ Ver `config.ini`. Los valores críticos son:
 - `[WEBSERVICE] pathLogWebservice`: carpeta donde se encuentra el log del webservice. El script concatena `LogWebServiceAAAAMMDD.txt` (fecha en formato `Ymd`), lee las últimas 5 líneas y las adjunta al email de fallo y al log del monitor.
 - `[EMAIL] apiMailUrl / apiToken / recipient / replyTo`: credenciales del API de correo (el token se envía en el header `Token` junto con `X-Request-Id`).
 - `[EMAIL] logFolder`: carpeta donde se escriben los logs diarios.
-- `[EMAIL] emailTemplate`: ruta de la plantilla del cuerpo del email (relativa al `config.ini` o absoluta). Placeholders disponibles: `{timestamp}`, `{url}`, `{attempts}`, `{httpCode}`, `{error}`, `{wslog}`, `{agentName}`, `{agentVersion}`.
+- `[EMAIL] emailTemplate`: ruta de la plantilla del cuerpo del email (relativa al `config.ini` o absoluta). Copiar `email-template.example.txt` a `email-template.txt` y personalizarla. Placeholders disponibles: `{timestamp}`, `{url}`, `{attempts}`, `{httpCode}`, `{error}`, `{wslog}`, `{agentName}`, `{agentVersion}`.
 - `[SETTINGS] maxRetries / retryDelay`: cantidad de reintentos y espera entre ellos.
 - `[SETTINGS] minEmailInterval`: segundos mínimos entre emails de notificación (previene spam).
 - `[SETTINGS] logRetentionDays`: retención de logs en días (default 7). Los `monitor_*.log` más antiguos que ese valor se eliminan al ejecutar el script.

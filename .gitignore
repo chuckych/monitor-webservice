@@ -2,6 +2,9 @@
 *.ini
 !config.example.ini
 
+# Plantilla del email personalizable
+email-template.txt
+
 # Logs
 *.log
 
