@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 define('SCRIPT_NAME', 'ping-monitor');
-define('SCRIPT_VERSION', '1.0.5');
+define('SCRIPT_VERSION', '1.0.6');
 define('CONFIG_FILE', __DIR__ . '/config.ini');
 
 define('EXIT_SUCCESS', 0);
@@ -148,6 +148,8 @@ class WebServiceMonitor
 
         $this->cleanupOldLogs();
 
+        $logErrorDetected = $this->detectWebServiceLogError();
+
         do {
             $this->status['attempts']++;
             $this->debugLog('Ping attempt #' . $this->status['attempts'] . ' to: ' . $this->config['urlPing']);
@@ -157,9 +159,8 @@ class WebServiceMonitor
             if ($result['success']) {
                 $this->log('INFO', 'Ping successful - HTTP Code: ' . $result['httpCode']);
                 $this->status['success'] = true;
-                $this->resetEmailLock();
-                $this->log('INFO', 'Script completed successfully (Code: ' . EXIT_SUCCESS . ')');
-                return EXIT_SUCCESS;
+                $this->status['httpCode'] = $result['httpCode'];
+                break;
             }
 
             $this->status['lastError'] = $result['error'];
@@ -173,7 +174,35 @@ class WebServiceMonitor
             }
         } while ($this->status['attempts'] < $this->config['maxRetries'] + 1);
 
-        return $this->handleFinalFailure();
+        if ($this->status['success'] && !$logErrorDetected) {
+            $this->resetEmailLock();
+            $this->log('INFO', 'Script completed successfully (Code: ' . EXIT_SUCCESS . ')');
+            return EXIT_SUCCESS;
+        }
+
+        return $this->handleFinalFailure($logErrorDetected);
+    }
+
+    /**
+     * Verifica si la última línea del log del webservice contiene "Error" o "Usuarios Exedidos".
+     *
+     * @return bool true si se detecta un error interno en la última línea
+     */
+    private function detectWebServiceLogError()
+    {
+        $lines = $this->getWebServiceLogTail(5);
+        if (empty($lines)) {
+            return false;
+        }
+
+        $lastLine = utf8Normalize(rtrim($lines[count($lines) - 1], "\r\n"));
+
+        if (stripos($lastLine, 'Error') !== false || stripos($lastLine, 'Usuarios Exedidos') !== false) {
+            $this->log('ERROR', 'WebService log error detected: ' . $lastLine);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -335,13 +364,19 @@ class WebServiceMonitor
     }
 
     /**
-     * Maneja el fallo final tras agotar los reintentos: decide si envía email.
+     * Maneja el fallo final tras agotar los reintentos o ante un error interno detectado
+     * en el log del webservice: decide si envía email.
      *
+     * @param bool $logErrorDetected true si la última línea del log del webservice indicaba error
      * @return int Código de retorno
      */
-    private function handleFinalFailure()
+    private function handleFinalFailure($logErrorDetected = false)
     {
-        $this->log('INFO', 'Max retries reached. Evaluating email notification.');
+        if ($logErrorDetected) {
+            $this->log('INFO', 'WebService log error detected. Evaluating email notification.');
+        } else {
+            $this->log('INFO', 'Max retries reached. Evaluating email notification.');
+        }
 
         if (!$this->shouldSendEmail()) {
             $this->log('INFO', 'Notification email skipped - sent recently (interval active)');
@@ -349,12 +384,16 @@ class WebServiceMonitor
             return EXIT_PING_FAILED_EMAIL_SKIPPED;
         }
 
+        $message = $logErrorDetected
+            ? 'Error interno de webservice'
+            : 'El webservice no está respondiendo correctamente.';
+
         $subject = strtr($this->config['emailSubject'], [
             '{status}' => 'FAILED',
             '{time}' => date('Y-m-d H:i:s'),
         ]);
 
-        $body = $this->buildEmailBody();
+        $body = $this->buildEmailBody($message);
 
         $result = sendEmail($this->config, $subject, $body);
         if ($result['success']) {
@@ -373,15 +412,16 @@ class WebServiceMonitor
     /**
      * Construye el cuerpo del email desde la plantilla en archivo plano.
      *
+     * @param string $message Texto principal de la alerta ({message})
      * @return string
      */
-    private function buildEmailBody()
+    private function buildEmailBody($message)
     {
         $template = @file_get_contents($this->config['emailTemplate']);
         if ($template === false) {
             $this->log('WARN', 'Email template not found: ' . $this->config['emailTemplate'] . ' - using default');
-            $template = "ALERTA DE MONITOREO\n\n"
-                . "El webservice no está respondiendo correctamente.\n\n"
+            $template = ".:: ALERTA WEBSERVICE ::.\n\n"
+                . "{message}\n\n"
                 . "Timestamp: {timestamp}\n"
                 . "URL: {url}\n"
                 . "Intentos: {attempts}\n"
@@ -402,6 +442,7 @@ class WebServiceMonitor
         }
 
         return strtr($template, [
+            '{message}' => $message,
             '{timestamp}' => date('Y-m-d H:i:s'),
             '{url}' => $this->config['urlPing'],
             '{attempts}' => $this->status['attempts'],

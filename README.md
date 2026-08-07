@@ -70,10 +70,10 @@ webservice-monitor/
 Ver `config.ini`. Los valores críticos son:
 
 - `[WEBSERVICE] urlPing`: URL del endpoint a monitorear (debe responder HTTP 201). Algunos servicios requieren el signo `?` al final del path para responder.
-- `[WEBSERVICE] pathLogWebservice`: carpeta donde se encuentra el log del webservice. El script concatena `LogWebServiceAAAAMMDD.txt` (fecha en formato `Ymd`), lee las últimas 5 líneas y las adjunta al email de fallo y al log del monitor.
+- `[WEBSERVICE] pathLogWebservice`: carpeta donde se encuentra el log del webservice. El script concatena `LogWebServiceAAAAMMDD.txt` (fecha en formato `Ymd`), lee las últimas 5 líneas y las adjunta al email de fallo y al log del monitor. Además, si la **última línea** del log contiene `Error` o `Usuarios Exedidos`, se envía un email de alerta aunque el ping responda correctamente.
 - `[EMAIL] apiMailUrl / apiToken / recipient / replyTo`: credenciales del API de correo (el token se envía en el header `Token` junto con `X-Request-Id`).
 - `[EMAIL] logFolder`: carpeta donde se escriben los logs diarios.
-- `[EMAIL] emailTemplate`: ruta de la plantilla del cuerpo del email (relativa al `config.ini` o absoluta). Copiar `email-template.example.txt` a `email-template.txt` y personalizarla. Placeholders disponibles: `{timestamp}`, `{url}`, `{attempts}`, `{httpCode}`, `{error}`, `{wslog}`, `{agentName}`, `{agentVersion}`.
+- `[EMAIL] emailTemplate`: ruta de la plantilla del cuerpo del email (relativa al `config.ini` o absoluta). Copiar `email-template.example.txt` a `email-template.txt` y personalizarla. Placeholders disponibles: `{timestamp}`, `{url}`, `{attempts}`, `{httpCode}`, `{error}`, `{wslog}`, `{agentName}`, `{agentVersion}`, `{message}` (`{message}` se reemplaza por "El webservice no está respondiendo correctamente." si falla el ping, o "Error interno de webservice" si se detecta un error en la última línea del log del webservice).
 - `[SETTINGS] maxRetries / retryDelay`: cantidad de reintentos y espera entre ellos.
 - `[SETTINGS] minEmailInterval`: segundos mínimos entre emails de notificación (previene spam).
 - `[SETTINGS] logRetentionDays`: retención de logs en días (default 7). Los `monitor_*.log` más antiguos que ese valor se eliminan al ejecutar el script.

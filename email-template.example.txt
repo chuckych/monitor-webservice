@@ -1,6 +1,6 @@
-.:: ALERTA WEBSERVICE ::.
+ALERTA WEBSERVICE
 
-El webservice no está respondiendo correctamente.
+{message}
 
 Timestamp: {timestamp}
 URL: {url}
