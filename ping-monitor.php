@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 define('SCRIPT_NAME', 'ping-monitor');
-define('SCRIPT_VERSION', '1.0.7');
+define('SCRIPT_VERSION', '1.0.8');
 define('CONFIG_FILE', __DIR__ . '/config.ini');
 
 define('EXIT_SUCCESS', 0);
@@ -126,6 +126,7 @@ class WebServiceMonitor
         $config['executionTimeout'] = (int) $config['executionTimeout'];
         $config['dnsCacheTimeout'] = (int) $config['dnsCacheTimeout'];
         $config['minEmailInterval'] = (int) $config['minEmailInterval'];
+        $config['sendEmail'] = !isset($ini['SETTINGS']['sendEmail']) || (int) $ini['SETTINGS']['sendEmail'] === 1;
         $config['logRetentionDays'] = isset($ini['SETTINGS']['logRetentionDays'])
             ? (int) $ini['SETTINGS']['logRetentionDays']
             : 7;
@@ -164,7 +165,7 @@ class WebServiceMonitor
             }
 
             $this->status['lastError'] = $result['error'];
-            $this->status['httpCode']  = $result['httpCode'];
+            $this->status['httpCode'] = $result['httpCode'];
             $this->log('ERROR', 'Ping failed - HTTP Code: ' . $result['httpCode'] . ', Error: ' . $result['error']);
             // $this->logWebServiceLogTail();
 
@@ -235,6 +236,7 @@ class WebServiceMonitor
         }
 
         $response = curl_exec($ch);
+        // $this->debugLog('Response pingWebService: ' . json_encode($response));
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
         $curlErrno = curl_errno($ch);
@@ -376,6 +378,12 @@ class WebServiceMonitor
             $this->log('INFO', 'WebService log error detected. Evaluating email notification.');
         } else {
             $this->log('INFO', 'Max retries reached. Evaluating email notification.');
+        }
+
+        if (!$this->config['sendEmail']) {
+            $this->log('INFO', 'Notification email skipped - sendEmail disabled in config');
+            $this->log('INFO', 'Script completed with errors (Code: ' . EXIT_PING_FAILED_EMAIL_SKIPPED . ')');
+            return EXIT_PING_FAILED_EMAIL_SKIPPED;
         }
 
         if (!$this->shouldSendEmail()) {

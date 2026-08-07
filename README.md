@@ -76,6 +76,7 @@ Ver `config.ini`. Los valores críticos son:
 - `[EMAIL] emailTemplate`: ruta de la plantilla del cuerpo del email (relativa al `config.ini` o absoluta). Copiar `email-template.example.txt` a `email-template.txt` y personalizarla. Placeholders disponibles: `{timestamp}`, `{url}`, `{attempts}`, `{httpCode}`, `{error}`, `{wslog}`, `{agentName}`, `{agentVersion}`, `{message}` (`{message}` se reemplaza por "El webservice no está respondiendo correctamente." si falla el ping, o "Error interno de webservice" si se detecta un error en la última línea del log del webservice).
 - `[SETTINGS] maxRetries / retryDelay`: cantidad de reintentos y espera entre ellos.
 - `[SETTINGS] minEmailInterval`: segundos mínimos entre emails de notificación (previene spam).
+- `[SETTINGS] sendEmail`: habilita (`1`) o deshabilita (`0`) el envío de emails de notificación (default `1`). Si está deshabilitado, el script registra el evento en el log pero no envía email (aplica a ping fallido y a error interno detectado en el log del webservice).
 - `[SETTINGS] logRetentionDays`: retención de logs en días (default 7). Los `monitor_*.log` más antiguos que ese valor se eliminan al ejecutar el script.
 - `[SETTINGS] sslVerify` / `caBundle`: verificación SSL de cURL (por defecto `1` = activa, usando el `cacert.pem` incluido en el proyecto). Para desactivarla: `sslVerify = 0`.
 
