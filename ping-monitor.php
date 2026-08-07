@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 date_default_timezone_set('America/Argentina/Buenos_Aires');
 
 define('SCRIPT_NAME', 'ping-monitor');
-define('SCRIPT_VERSION', '1.0.0');
+define('SCRIPT_VERSION', '1.0.1');
 define('CONFIG_FILE', __DIR__ . '/config.ini');
 
 define('EXIT_SUCCESS', 0);
@@ -89,7 +89,6 @@ class WebServiceMonitor
             'connectTimeout' => ['SETTINGS', 'connectTimeout'],
             'executionTimeout' => ['SETTINGS', 'executionTimeout'],
             'dnsCacheTimeout' => ['SETTINGS', 'dnsCacheTimeout'],
-            'lockFile' => ['SETTINGS', 'lockFile'],
             'minEmailInterval' => ['SETTINGS', 'minEmailInterval'],
         ];
 
@@ -109,6 +108,9 @@ class WebServiceMonitor
         $config['logFolder'] = isset($ini['EMAIL']['logFolder'])
             ? $ini['EMAIL']['logFolder']
             : '';
+        $config['lockFile'] = isset($ini['SETTINGS']['lockFile']) && $ini['SETTINGS']['lockFile'] !== ''
+            ? $ini['SETTINGS']['lockFile']
+            : __DIR__ . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'monitor.lock';
 
         $emailTemplate = isset($ini['EMAIL']['emailTemplate'])
             ? $ini['EMAIL']['emailTemplate']
